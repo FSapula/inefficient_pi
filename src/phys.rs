@@ -1,6 +1,6 @@
 pub struct physBox {
     pub position: f64,
-    velocity: f64,
+    pub velocity: f64,
     mass: f64,
     width: f64,
 }
@@ -42,18 +42,26 @@ fn calculate_after_collision_speeds(ob1: &physBox, ob2: &physBox) -> (f64, f64) 
 fn box_mov_offset(ob1: &physBox, ob2: &physBox, time_elapse: f64) -> (f64, f64) {
     (ob1.velocity * time_elapse, ob2.velocity * time_elapse)
 }
+pub fn no_more_collisions(ob1: &physBox, ob2: &physBox) -> bool {
+    if ob1.velocity > 0.0 && ob2.velocity >= ob1.velocity {
+        return true;
+    }
+    false
+}
 pub fn run_sim(ob1: &physBox, ob2: &physBox) -> (physBox, physBox, f64) {
     let times = predict_collision(ob1, ob2);
     let time_elapsed: f64;
-    let moves: (f64, f64);
+    let mut moves: (f64, f64);
     let mut speeds: (f64, f64) = (ob1.velocity, ob2.velocity);
     if wall_first(times.0, times.1) {
         time_elapsed = times.0.abs();
         moves = box_mov_offset(ob1, ob2, time_elapsed);
+        moves.0 += 0.001;
         speeds = (-speeds.0, speeds.1);
     } else {
         time_elapsed = times.1.abs();
         moves = box_mov_offset(ob1, ob2, time_elapsed);
+        moves.1 += 0.001;
         speeds = calculate_after_collision_speeds(ob1, ob2);
     }
     (
