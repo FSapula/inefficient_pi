@@ -35,15 +35,15 @@ fn calculate_after_collision_speeds(ob1: &physBox, ob2: &physBox) -> (f64, f64) 
     let u2 = ob2.velocity;
     let m1 = ob1.mass;
     let m2 = ob2.mass;
-    let v1 = calculate_collision(u1, u2, m1, m2);
-    let v2 = calculate_collision(u2, u1, m2, m1);
+    let v1 = (u1 * (m1 - m2) + 2.0 * m2 * u2) / (m1 + m2);
+    let v2 = (u2 * (m2 - m1) + 2.0 * m1 * u1) / (m1 + m2);
     (v1, v2)
 }
 fn box_mov_offset(ob1: &physBox, ob2: &physBox, time_elapse: f64) -> (f64, f64) {
     (ob1.velocity * time_elapse, ob2.velocity * time_elapse)
 }
 pub fn no_more_collisions(ob1: &physBox, ob2: &physBox) -> bool {
-    if ob1.velocity > 0.0 && ob2.velocity >= ob1.velocity {
+    if ob1.velocity >= 0.0 && ob2.velocity >= ob1.velocity {
         return true;
     }
     false
@@ -54,13 +54,13 @@ pub fn run_sim(ob1: &physBox, ob2: &physBox) -> (physBox, physBox, f64) {
     let mut moves: (f64, f64);
     let mut speeds: (f64, f64) = (ob1.velocity, ob2.velocity);
     if wall_first(times.0, times.1) {
-        time_elapsed = times.0.abs();
-        moves = box_mov_offset(ob1, ob2, time_elapsed);
+        time_elapsed = times.0;
+        moves = box_mov_offset(ob1, ob2, time_elapsed.abs());
         moves.0 += 0.001;
         speeds = (-speeds.0, speeds.1);
     } else {
-        time_elapsed = times.1.abs();
-        moves = box_mov_offset(ob1, ob2, time_elapsed);
+        time_elapsed = times.1;
+        moves = box_mov_offset(ob1, ob2, time_elapsed.abs());
         moves.1 += 0.001;
         speeds = calculate_after_collision_speeds(ob1, ob2);
     }
@@ -69,4 +69,26 @@ pub fn run_sim(ob1: &physBox, ob2: &physBox) -> (physBox, physBox, f64) {
         build_box(ob2.position + moves.1, speeds.1, ob2.mass, ob2.width),
         time_elapsed,
     )
+}
+pub fn get_pi(second_box_mass: f64, verbose: bool) {
+    let mut box1 = build_box(5.0, 0.0, 1.0, 1.0);
+    let mut box2 = build_box(10.0, -1.0, second_box_mass, 1.0);
+    let mut collision: u32 = 0;
+    loop {
+        if no_more_collisions(&box1, &box2) {
+            println!("end");
+            break;
+        }
+        let boxes = run_sim(&box1, &box2);
+        collision += 1;
+        box1 = boxes.0;
+        box2 = boxes.1;
+        if verbose {
+            println!(
+                "box1: {},box1 speed: {}, box2: {},box2 speed: {}, time: {}, collisions: {}",
+                box1.position, box1.velocity, box2.position, box2.velocity, boxes.2, collision
+            );
+        }
+    }
+    println!("collision num: {collision}")
 }
