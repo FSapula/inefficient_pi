@@ -1,10 +1,10 @@
-pub struct physBox {
-    pub position: f64,
-    pub velocity: f64,
+struct physBox {
+    position: f64,
+    velocity: f64,
     mass: f64,
     width: f64,
 }
-pub fn build_box(position: f64, velocity: f64, mass: f64, width: f64) -> physBox {
+fn build_box(position: f64, velocity: f64, mass: f64, width: f64) -> physBox {
     physBox {
         position,
         velocity,
@@ -27,9 +27,6 @@ fn predict_collision(ob1: &physBox, ob2: &physBox) -> (f64, f64) {
     let time_to_box = box_distance / (ob1.velocity - ob2.velocity);
     (time_to_wall, time_to_box)
 }
-fn calculate_collision(v1: f64, v2: f64, m1: f64, m2: f64) -> f64 {
-    v1 * ((m1 - m2) + 2.0 * m2 * v2) / (m1 + m2)
-}
 fn calculate_after_collision_speeds(ob1: &physBox, ob2: &physBox) -> (f64, f64) {
     let u1 = ob1.velocity;
     let u2 = ob2.velocity;
@@ -42,13 +39,13 @@ fn calculate_after_collision_speeds(ob1: &physBox, ob2: &physBox) -> (f64, f64) 
 fn box_mov_offset(ob1: &physBox, ob2: &physBox, time_elapse: f64) -> (f64, f64) {
     (ob1.velocity * time_elapse, ob2.velocity * time_elapse)
 }
-pub fn no_more_collisions(ob1: &physBox, ob2: &physBox) -> bool {
+fn no_more_collisions(ob1: &physBox, ob2: &physBox) -> bool {
     if ob1.velocity >= 0.0 && ob2.velocity >= ob1.velocity {
         return true;
     }
     false
 }
-pub fn run_sim(ob1: &physBox, ob2: &physBox) -> (physBox, physBox, f64) {
+fn run_sim(ob1: &physBox, ob2: &physBox) -> (physBox, physBox, f64) {
     let times = predict_collision(ob1, ob2);
     let time_elapsed: f64;
     let mut moves: (f64, f64);
@@ -85,8 +82,8 @@ pub fn get_pi(second_box_mass: f64, verbose: bool) {
         box2 = boxes.1;
         if verbose {
             println!(
-                "box1: {},box1 speed: {}, box2: {},box2 speed: {}, time: {}, collisions: {}",
-                box1.position, box1.velocity, box2.position, box2.velocity, boxes.2, collision
+                "Values after collision:{}, box1 pos:{}, box1 vel:{}, box2 pos:{}, box2 vel:{}, time elapsed since last collision:{}",
+                collision, box1.position, box1.velocity, box2.position, box2.velocity, boxes.2,
             );
         }
     }
