@@ -12,7 +12,15 @@ pub fn build_box(position: f64, velocity: f64, mass: f64, width: f64) -> physBox
         width,
     }
 }
-
+fn wall_first(time1: f64, time2: f64) -> bool {
+    if time1 < 0.0 {
+        return false;
+    }
+    if time2 < 0.0 || time1 < time2 {
+        return true;
+    }
+    false
+}
 fn predict_collision(ob1: &physBox, ob2: &physBox) -> (f64, f64) {
     let time_to_wall = -1.0 * (ob1.position - ob1.width) / ob1.velocity;
     let box_distance = ob2.position - ob2.width - (ob1.position + ob1.width);
@@ -35,22 +43,16 @@ fn box_mov_offset(ob1: &physBox, ob2: &physBox, time_elapse: f64) -> (f64, f64) 
     (ob1.velocity * time_elapse, ob2.velocity * time_elapse)
 }
 pub fn run_sim(ob1: &physBox, ob2: &physBox) -> (physBox, physBox, f64) {
-    let mut times = predict_collision(ob1, ob2);
+    let times = predict_collision(ob1, ob2);
     let time_elapsed: f64;
     let moves: (f64, f64);
-    let speeds: (f64, f64);
-    if times.0 < 0.0 {
-        times.0 = times.1 + 1.0;
-    }
-    if times.1 < 0.0 {
-        times.1 = times.0 + 1.0;
-    }
-    if times.0 < times.1 {
-        time_elapsed = times.0;
+    let mut speeds: (f64, f64) = (ob1.velocity, ob2.velocity);
+    if wall_first(times.0, times.1) {
+        time_elapsed = times.0.abs();
         moves = box_mov_offset(ob1, ob2, time_elapsed);
-        speeds = calculate_after_collision_speeds(ob1, ob2);
+        speeds = (-speeds.0, speeds.1);
     } else {
-        time_elapsed = times.1;
+        time_elapsed = times.1.abs();
         moves = box_mov_offset(ob1, ob2, time_elapsed);
         speeds = calculate_after_collision_speeds(ob1, ob2);
     }
