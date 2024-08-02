@@ -1,8 +1,16 @@
-struct Box {
+pub struct Box {
     position: f64,
     velocity: f64,
     mass: f64,
     width: f64,
+}
+pub fn build_box(position: f64, velocity: f64, mass: f64, width: f64) -> Box {
+    Box {
+        position,
+        velocity,
+        mass,
+        width,
+    }
 }
 fn predict_collision(ob1: Box, ob2: Box) -> (f64, f64) {
     let time_to_wall = -1.0 * (ob1.position + ob1.width) / ob1.velocity;
